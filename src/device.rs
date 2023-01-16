@@ -134,18 +134,17 @@ impl Device {
     /// The path is an absolute path and includes the sys mount point. For example, the syspath for
     /// `tty0` could be `/sys/devices/virtual/tty/tty0`, which includes the sys mount point,
     /// `/sys`.
-    pub fn syspath(&self) -> &Path {
-        Path::new(unsafe {
-            util::ptr_to_os_str_unchecked(ffi::udev_device_get_syspath(self.device))
-        })
+    pub fn syspath<'a>(&'a self) -> Option<&'a Path> {
+        util::ptr_to_os_str::<'a>(unsafe { ffi::udev_device_get_syspath(self.device) })
+            .map(|s| Path::new(s))
     }
 
     /// Returns the kernel devpath value of the device.
     ///
     /// The path does not contain the sys mount point, but does start with a `/`. For example, the
     /// devpath for `tty0` could be `/devices/virtual/tty/tty0`.
-    pub fn devpath(&self) -> &OsStr {
-        unsafe { util::ptr_to_os_str_unchecked(ffi::udev_device_get_devpath(self.device)) }
+    pub fn devpath(&self) -> Option<&OsStr> {
+        util::ptr_to_os_str(unsafe { ffi::udev_device_get_devpath(self.device) })
     }
 
     /// Returns the path to the device node belonging to the device.
